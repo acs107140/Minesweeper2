@@ -1,7 +1,7 @@
 let db = require("../utils/database");
 
 async function getAll() {
-  let sql = `SELECT (user_name, score) FROM record ORDER BY score DESC`;
+  let sql = `SELECT user_name, score FROM record ORDER BY score DESC`;
   let records = await db.query(sql);
   return records;
 }

@@ -53,6 +53,7 @@ async function query(sql) {
           reject(err);
         }
       });
+      
       resolve(rows);
     });
   });

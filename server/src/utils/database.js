@@ -3,6 +3,12 @@ const fs = require("fs");
 const filePath = __dirname + "/../../ntcu-gui.db";
 
 function init() {
+  let sql = `CREATE TABLE IF NOT EXISTS record (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_name TEXT,
+    score INTEGER
+  )`
+  query(sql);
 }
 
 // create file if not exist

@@ -11,6 +11,9 @@ const apiRouter = require("./routes/api");
 // create instance of express APP
 const app = express();
 
+app.set("views", path.join(__dirname, "/views"));
+app.set("view engine", "ejs");
+
 // bind middleware
 app.use(logger("dev"));
 app.use(express.json());

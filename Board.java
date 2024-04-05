@@ -142,6 +142,30 @@ public class Board {
         }
     }
 
+    public int getRows() {
+        return rows;
+    }
+    
+    public int getCols() {
+        return cols;
+    }
+    
+    public boolean isMine(int row, int col) {
+        return mines[row][col];
+    }
+    
+    public boolean isRevealed(int row, int col) {
+        return revealed[row][col];
+    }
+    
+    public boolean isFlagged(int row, int col) {
+        return flagged[row][col];
+    }
+    
+    public int getSurroundingMinesCount(int row, int col) {
+        return surroundingMines[row][col];
+    }
+    
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         Board b = new Board(8, 8);

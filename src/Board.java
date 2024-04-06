@@ -25,7 +25,7 @@ public class Board {
         initBoard();
         this.status = GameStatus.PLAYING;
     }
-
+    
     public void initBoard() {
         this.numMines = 0;
         cellsRemain = rows * cols;
@@ -183,6 +183,25 @@ public class Board {
 
     public GameStatus getStatus() {
         return status;
+    }
+
+    public Board clone() {
+        Board clonedBoard = new Board(this.rows, this.cols);
+        
+        // Clone mines, revealed, flagged, and surroundingMines arrays
+        for (int i = 0; i < this.rows; i++) {
+            System.arraycopy(this.mines[i], 0, clonedBoard.mines[i], 0, this.cols);
+            System.arraycopy(this.revealed[i], 0, clonedBoard.revealed[i], 0, this.cols);
+            System.arraycopy(this.flagged[i], 0, clonedBoard.flagged[i], 0, this.cols);
+            System.arraycopy(this.surroundingMines[i], 0, clonedBoard.surroundingMines[i], 0, this.cols);
+        }
+        
+        // Clone other attributes
+        clonedBoard.numMines = this.numMines;
+        clonedBoard.cellsRemain = this.cellsRemain;
+        clonedBoard.status = this.status;
+        
+        return clonedBoard;
     }
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);

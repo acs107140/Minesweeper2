@@ -20,7 +20,7 @@ public class Game implements Controller{
 
     private void initialize(){
         mainFrame = new JFrame("Minesweeper Game");
-        mainFrame.setSize(900, 450);
+        mainFrame.setSize(900, 550);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         displayPanel = new JPanel();
         displayPanel.setLayout(new CardLayout()); 

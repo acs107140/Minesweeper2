@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameGUI extends JPanel {
     private Controller controller;
@@ -15,6 +17,29 @@ public class GameGUI extends JPanel {
     private Timer gameTimer;
     private int secondsPassed;
     private JPanel gamePanel;
+    private List<GameSnapshot> gameSnapshots; // 用於存儲遊戲狀態快照
+    private int currentSnapshotIndex; // 當前遊戲快照索引
+    private boolean replayFinished;
+    private int replaySpeed = 1000; // 初始重播速度為1秒
+    private Timer replayTimer;
+
+    private static class GameSnapshot {
+        private Board board;
+        private int secondsPassed;
+
+        public GameSnapshot(Board board, int secondsPassed) {
+            this.board = board;
+            this.secondsPassed = secondsPassed;
+        }
+
+        public Board getBoard() {
+            return board;
+        }
+
+        public int getSecondsPassed() {
+            return secondsPassed;
+        }
+    }
 
     public GameGUI(Controller controller) {
         this.controller = controller;
@@ -22,6 +47,9 @@ public class GameGUI extends JPanel {
         this.buttons = new JButton[board.getRows()][board.getCols()];
         bombIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/bomb.png")), 40, 40);
         flagIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/flag.png")), 40, 40);
+        this.gameSnapshots = new ArrayList<>();
+        this.currentSnapshotIndex = -1; // 初始化為-1，表示沒有快照
+        this.replayFinished = false;
         this.secondsPassed = 0;
         initialize();
         startTimer();
@@ -82,8 +110,27 @@ public class GameGUI extends JPanel {
             e.printStackTrace();
         }
         this.add(timerLabel, gbc);
-
+        JButton speedButton = new JButton("Speed: 1x");
+        speedButton.addActionListener(e -> {
+            if (replaySpeed == 1000) {
+                replaySpeed = 500; // 設置為0.5秒
+                speedButton.setText("Speed: 2x");
+            } else if (replaySpeed == 500) {
+                replaySpeed = 250; // 設置為0.25秒
+                speedButton.setText("Speed: 4x");
+            } else {
+                replaySpeed = 1000; // 設置為1秒
+                speedButton.setText("Speed: 1x");
+            }
+            if (replayTimer != null && replayTimer.isRunning()) {
+                replayTimer.setDelay(replaySpeed); // 更新重播速度
+            }
+        });
         gbc.gridy = 1;
+        gbc.weighty = 1;
+        gbc.anchor = GridBagConstraints.CENTER;
+        this.add(speedButton, gbc); // 添加按鈕到主面板
+        gbc.gridy = 2;
         gbc.weighty = 1;
         gbc.anchor = GridBagConstraints.CENTER;
         gamePanel = new JPanel(); // 初始化GamePanel
@@ -139,7 +186,7 @@ public class GameGUI extends JPanel {
             resetGame();
             controller.switchPanel("MAIN");
         });
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.weighty = 0.2;
         this.add(backButton, gbc);
     }
@@ -239,29 +286,72 @@ public class GameGUI extends JPanel {
 
     }
 
+    private void showReplayDialog(String gameResult) {
+        int choice = JOptionPane.showOptionDialog(
+                null,
+                gameResult + " Do you want to replay?",
+                "Game Over",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                new String[] { "Yes", "No" },
+                "Yes");
+
+        if (choice == JOptionPane.YES_OPTION) {
+            replayGame();
+        }
+    }
+
     private void handleButtonClick(int row, int col) {
         if (!board.isRevealed(row, col)) {
             board.revealCell(row, col);
             updateButtons();
+            addGameSnapshot();
             if (board.isGameOver()) {
-                gameTimer.stop();
-                if (board.getStatus() == Board.GameStatus.WIN) {
-                    JOptionPane.showMessageDialog(this, "You Win!");
-                } else if (board.getStatus() == Board.GameStatus.LOSE) {
-                    JOptionPane.showMessageDialog(this, "Failure!");
-                }
-                showNameInputDialog(); // 彈出對話框讓玩家輸入名稱
-                resetGame();
-                controller.switchPanel("MAIN");
+                handleGameOver();
             }
         }
+    }
+
+    private void handleGameOver() {
+        gameTimer.stop();
+        String gameResult = "";
+        if (board.getStatus() == Board.GameStatus.WIN) {
+            gameResult = "Win!";
+        } else if (board.getStatus() == Board.GameStatus.LOSE) {
+            gameResult = "Failure!";
+        }
+        showReplayDialog(gameResult);
+
+        // 使用計時器來檢查showReplayDialog是否已經關閉
+        Timer postReplayTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (replayFinished) { // 假設isReplayDialogShowing是一個方法，用於檢查showReplayDialog是否正在顯示
+                    // 停止postReplayTimer
+                    ((Timer) e.getSource()).stop();
+                    showNameInputDialog(); // 彈出對話框讓玩家輸入名稱
+                    resetGame();
+                    controller.switchPanel("MAIN");
+                }
+            }
+        });
+
+        postReplayTimer.start();
     }
 
     private void handleRightClick(int row, int col) {
         if (!board.isRevealed(row, col)) {
             board.toggleFlag(row, col);
             updateButtons();
+            addGameSnapshot();
         }
+    }
+
+    private void addGameSnapshot() {
+        GameSnapshot snapshot = new GameSnapshot(board.clone(), secondsPassed);
+        gameSnapshots.add(snapshot);
+        currentSnapshotIndex++;
     }
 
     private ImageIcon resizeImageIcon(ImageIcon icon, int width, int height) {
@@ -297,4 +387,35 @@ public class GameGUI extends JPanel {
             }
         }
     }
+
+    private void replayGame() {
+        if (gameSnapshots.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No game snapshots available for replay!", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        resetGame();
+        currentSnapshotIndex = 0;
+        Timer replayTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (currentSnapshotIndex < gameSnapshots.size()) {
+                    GameSnapshot snapshot = gameSnapshots.get(currentSnapshotIndex);
+                    board = snapshot.getBoard().clone(); // 使用克隆的Board對象
+                    secondsPassed = snapshot.getSecondsPassed();
+                    updateButtons();
+                    updateTimerLabel(String.format("%03d", secondsPassed));
+                    currentSnapshotIndex++;
+                } else {
+                    gameSnapshots.clear();
+                    replayFinished = true;
+                    gameTimer.stop();
+                    ((Timer) e.getSource()).stop();
+                }
+            }
+        });
+        replayTimer.start();
+    }
+
 }

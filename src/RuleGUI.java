@@ -17,32 +17,27 @@ public class RuleGUI extends JPanel {
 
     private void initialize() {
         // 設置布局
-        this.setLayout(new BorderLayout());
-
-        // 加載背景圖片
+        this.setLayout(new GridBagLayout());
         backgroundIcon = new ImageIcon(getClass().getResource("./img/background.png"));
-        JLabel backgroundLabel = new JLabel(backgroundIcon);
-        this.add(backgroundLabel, BorderLayout.CENTER);
-
-        // 添加描述文字的背景區域
-        JPanel textPanel = new JPanel();
-        textPanel.setOpaque(false); // 設置為透明以顯示背景圖片
-        textPanel.setPreferredSize(new Dimension(400, 300)); // 設置大小
-        textPanel.setLayout(new BorderLayout());
-
         // 添加描述文字
         JTextArea ruleText = new JTextArea(statement);
         ruleText.setEditable(false);
-        ruleText.setOpaque(true); // 設置為不透明以顯示背景色
         ruleText.setFont(new Font("Microsoft JhengHei", Font.BOLD, 16)); // 使用支持中文的字體
         ruleText.setForeground(Color.BLACK);
         ruleText.setBackground(new Color(240, 240, 240)); // 設置背景色
         ruleText.setMargin(new Insets(20, 20, 20, 20)); // 設置邊緣空間
+        ruleText.setAlignmentX(Component.CENTER_ALIGNMENT); // 設置為置中
 
-        textPanel.add(ruleText, BorderLayout.CENTER);
+        // 使用 GridBagConstraints 設定 JTextArea 在布局中的位置
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        this.add(ruleText, gbc);
 
         // 添加返回主選單的按鈕
-        JButton backButton = new JButton("返回主選單");
+        JButton backButton = new JButton("Back to Main Menu");
         backButton.setFont(new Font("Microsoft JhengHei", Font.BOLD, 14)); // 設定字體和大小
         backButton.setForeground(new Color(200, 200, 200)); // 設定文字顏色
         backButton.setBackground(Color.darkGray); // 設定按鈕背景顏色
@@ -61,12 +56,12 @@ public class RuleGUI extends JPanel {
         backButton.addActionListener(e -> {
             controller.switchPanel("MAIN");
         });
-        textPanel.add(backButton, BorderLayout.SOUTH); // 將按鈕添加到 textPanel 的南側（底部）
 
-        backgroundLabel.setLayout(new GridBagLayout());
-        backgroundLabel.add(textPanel, new GridBagConstraints());
+        // 使用 GridBagConstraints 設定 JButton 在布局中的位置
+        gbc.gridy = 1;
+        gbc.weighty = 0.2;
+        this.add(backButton, gbc);
     }
-
 
     @Override
     protected void paintComponent(Graphics g) {

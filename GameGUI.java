@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class GameGUI extends JPanel {
+    private Controller controller;
     private Board board;
     private JButton[][] buttons;
     private ImageIcon bombIcon;
@@ -13,7 +14,8 @@ public class GameGUI extends JPanel {
     private int minutesPassed;
     private int secondsPassed;
 
-    public GameGUI() {
+    public GameGUI(Controller controller) {
+        this.controller = controller; 
         this.board = new Board(8, 8);
         this.buttons = new JButton[board.getRows()][board.getCols()];
         bombIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/bomb.png")), 40, 40);

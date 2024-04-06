@@ -2,47 +2,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class MainPage extends JPanel{
-    
-    private JPanel mainPanel;
-    private GameGUI gameGUI;
-    private RuleGUI ruleGUI;
+public class MainGUI extends JPanel {
+    private Controller controller;
 
-    public MainPage() {
+    public MainGUI(Controller controller) {
+        this.controller = controller; 
         initialize();
     }
 
     private void initialize() {
-        this.setLayout(new CardLayout());
 
-        mainPanel = createMainPanel();
-        this.add(mainPanel, "MAIN");
+        this.setLayout(new GridBagLayout());
 
-        gameGUI = new GameGUI();
-        this.add(gameGUI, "GAME");
-
-        ruleGUI = new RuleGUI();
-        this.add(ruleGUI, "RULE");
-        
-    }
-
-    private JPanel createMainPanel() {
-        JPanel panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                // 載入背景圖片
-                ImageIcon backgroundImage = new ImageIcon("./img/background.png");
-                // 繪製背景圖片
-                g.drawImage(backgroundImage.getImage(), 0, 0, this.getWidth(), this.getHeight(), this);
-            }
-        };
-        
-        panel.setLayout(new GridBagLayout());
-        
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
-    
+
         JLabel titleLabel = new JLabel("MineSweeper");
         titleLabel.setPreferredSize(new Dimension(90, 30));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -52,39 +26,45 @@ public class MainPage extends JPanel{
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 3;
-        panel.add(titleLabel, gbc);
-    
+        this.add(titleLabel, gbc);
+
         JButton startButton = createButton("StartGame", e -> {
             showGameGUI();
         });
         gbc.gridx = 0;
         gbc.gridy = 1;
-        panel.add(startButton, gbc);
-    
+        this.add(startButton, gbc);
+
         JButton rulesButton = createButton("Rules", e -> {
             showRules();
         });
         gbc.gridx = 0;
         gbc.gridy = 2;
-        panel.add(rulesButton, gbc);
-    
+        this.add(rulesButton, gbc);
+
         JButton editMapButton = createButton("EditMap", e -> {
             editMap();
         });
         gbc.gridx = 0;
         gbc.gridy = 3;
-        panel.add(editMapButton, gbc);
-    
+        this.add(editMapButton, gbc);
+
         JButton leaderboardButton = createButton("LeaderBoard", e -> {
             showLeaderboard();
         });
         gbc.gridx = 0;
         gbc.gridy = 4;
-        panel.add(leaderboardButton, gbc);
-    
-        return panel;
+        this.add(leaderboardButton, gbc);
     }
-    
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        // 載入背景圖片
+        ImageIcon backgroundImage = new ImageIcon("./img/background.png");
+        // 繪製背景圖片
+        g.drawImage(backgroundImage.getImage(), 0, 0, this.getWidth(), this.getHeight(), this);
+    }
 
     private JButton createButton(String text, ActionListener actionListener) {
         JButton button = new JButton(text);
@@ -114,13 +94,11 @@ public class MainPage extends JPanel{
     }
 
     private void showGameGUI() {
-        CardLayout cardLayout = (CardLayout) this.getLayout();
-        cardLayout.show(this, "GAME");
+        controller.switchPanel("GAME");
     }
 
     private void showRules() {
-        CardLayout cardLayout = (CardLayout) this.getLayout();
-        cardLayout.show(this, "RULE");
+        controller.switchPanel("RULE");
     }
 
     private void showLeaderboard() {

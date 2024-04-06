@@ -1,18 +1,37 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class Game {
+public class Game implements Controller{
     private JFrame mainFrame;
     private JPanel displayPanel;
+
+    private MainGUI mainGUI;
+    private GameGUI gameGUI;
+    private RuleGUI ruleGUI;
     public Game(){
         initialize();
     };
+
+    @Override
+    public void switchPanel(String panelName){
+        CardLayout cardLayout = (CardLayout) displayPanel.getLayout();
+        cardLayout.show(displayPanel, panelName);
+    }
 
     private void initialize(){
         mainFrame = new JFrame("Minesweeper Game");
         mainFrame.setSize(900, 450);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        displayPanel = new MainPage();
+        displayPanel = new JPanel();
+        displayPanel.setLayout(new CardLayout()); 
+        mainGUI = new MainGUI(this);
+        displayPanel.add(mainGUI, "MAIN");
+
+        gameGUI = new GameGUI(this);
+        displayPanel.add(gameGUI, "GAME");
+
+        ruleGUI = new RuleGUI(this);
+        displayPanel.add(ruleGUI, "RULE");
         mainFrame.add(displayPanel, BorderLayout.CENTER);
         mainFrame.setVisible(true);
     };

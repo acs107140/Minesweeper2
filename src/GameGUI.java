@@ -47,37 +47,37 @@ public class GameGUI extends JPanel {
             Font digitalFont = Font.createFont(Font.TRUETYPE_FONT, new File("./font/timerFont.ttf")).deriveFont(48f);
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(digitalFont);
-    
+
             // 使用三個單獨的 JLabel 來顯示時間
             timerLabel = new JLabel();
             timerLabel.setLayout(new GridLayout(1, 3));
             timerLabel.setBackground(Color.BLACK);
             timerLabel.setOpaque(true);
-    
+
             JLabel digit1 = new JLabel("0");
             digit1.setForeground(Color.RED);
             digit1.setHorizontalAlignment(SwingConstants.RIGHT);
             digit1.setFont(digitalFont);
             timerLabel.add(digit1);
-    
+
             JLabel digit2 = new JLabel("0");
             digit2.setForeground(Color.RED);
             digit2.setHorizontalAlignment(SwingConstants.RIGHT);
             digit2.setFont(digitalFont);
             timerLabel.add(digit2);
-    
+
             JLabel digit3 = new JLabel("0");
             digit3.setForeground(Color.RED);
             digit3.setHorizontalAlignment(SwingConstants.RIGHT);
             digit3.setFont(digitalFont);
             timerLabel.add(digit3);
-    
+
             // 設置特殊的數位顯示器字體
             FontMetrics fm = digit1.getFontMetrics(digitalFont);
             int width = fm.charWidth('0');
             int height = fm.getHeight();
             timerLabel.setPreferredSize(new Dimension(width * 3, height));
-    
+
         } catch (IOException | FontFormatException e) {
             e.printStackTrace();
         }
@@ -136,11 +136,33 @@ public class GameGUI extends JPanel {
             }
         });
         backButton.addActionListener(e -> {
+            resetGame();
             controller.switchPanel("MAIN");
         });
         gbc.gridy = 2;
         gbc.weighty = 0.2;
         this.add(backButton, gbc);
+    }
+
+    public void resetGame() {
+        // 停止計時器並重置秒數
+        gameTimer.stop();
+        secondsPassed = 0;
+        updateTimerLabel("000");
+        startTimer();
+
+        // 重置按鈕狀態和圖標
+        for (int i = 0; i < board.getRows(); i++) {
+            for (int j = 0; j < board.getCols(); j++) {
+                JButton button = buttons[i][j];
+                button.setIcon(null);
+                button.setText("");
+                button.setEnabled(true);
+            }
+        }
+
+        // 重置棋盤狀態
+        board.initBoard();
     }
 
     @Override
@@ -163,15 +185,58 @@ public class GameGUI extends JPanel {
         });
         gameTimer.start();
     }
-    
+
     private void updateTimerLabel(String timeString) {
         String digit1 = timeString.substring(0, 1);
         String digit2 = timeString.substring(1, 2);
         String digit3 = timeString.substring(2, 3);
-    
+
         ((JLabel) timerLabel.getComponent(0)).setText(digit1);
         ((JLabel) timerLabel.getComponent(1)).setText(digit2);
         ((JLabel) timerLabel.getComponent(2)).setText(digit3);
+    }
+
+    private void showNameInputDialog() {
+        String name = "";
+        int score = secondsPassed;
+        while (name.trim().isEmpty()) {
+            JTextField textField = new JTextField();
+            Object[] message = {
+                    "Enter your name:", textField
+            };
+            int option = JOptionPane.showOptionDialog(
+                    this,
+                    message,
+                    "Name Input",
+                    JOptionPane.OK_OPTION,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    new Object[] { "OK" },
+                    "OK");
+
+            if (option == JOptionPane.OK_OPTION) {
+                name = textField.getText();
+
+                if (name.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Name is required!", "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+
+                    JOptionPane.showMessageDialog(this, "Name: " + name + " Score:" + score, "Score",
+                            JOptionPane.PLAIN_MESSAGE);
+                    uploadScore(name, score); // 上傳成績
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Cancel upload score!", "Warn", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, " Score:" + score, "Score",
+                        JOptionPane.PLAIN_MESSAGE);
+                break;
+            }
+        }
+    }
+
+    // TODO: 上傳
+    private void uploadScore(String name, int score) {
+
     }
 
     private void handleButtonClick(int row, int col) {
@@ -180,9 +245,14 @@ public class GameGUI extends JPanel {
             updateButtons();
             if (board.isGameOver()) {
                 gameTimer.stop();
-                JOptionPane.showMessageDialog(this, "Game Over!");
-                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-                frame.dispose();
+                if (board.getStatus() == Board.GameStatus.WIN) {
+                    JOptionPane.showMessageDialog(this, "You Win!");
+                } else if (board.getStatus() == Board.GameStatus.LOSE) {
+                    JOptionPane.showMessageDialog(this, "Failure!");
+                }
+                showNameInputDialog(); // 彈出對話框讓玩家輸入名稱
+                resetGame();
+                controller.switchPanel("MAIN");
             }
         }
     }

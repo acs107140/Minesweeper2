@@ -12,19 +12,32 @@ public class Board {
     private boolean[][] revealed;
     private boolean[][] flagged;
     private int[][] surroundingMines;
+    private GameStatus status;
+    public enum GameStatus {
+        PLAYING,
+        WIN,
+        LOSE
+    }
 
     public Board(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;
+        initBoard();
+        this.status = GameStatus.PLAYING;
+    }
+
+    public void initBoard() {
         this.numMines = 0;
         cellsRemain = rows * cols;
+
+        // Reset mines, revealed, flagged, and surroundingMines arrays
         mines = new boolean[rows][cols];
         revealed = new boolean[rows][cols];
         flagged = new boolean[rows][cols];
         surroundingMines = new int[rows][cols];
 
-        loadBoard();
-        updateSurroundingMines();
+        loadBoard(); // Reload mines
+        updateSurroundingMines(); // Update surrounding mines count
     }
 
     private void loadBoard() {
@@ -110,12 +123,14 @@ public class Board {
             for (int j = 0; j < cols; j++) {
                 if (mines[i][j] && revealed[i][j]) {
                     System.out.println("\nLose!");
+                    status = GameStatus.LOSE;
                     return true;
                 }
             }
         }
         if (cellsRemain == numMines) {
             System.out.println("\nWin!");
+            status = GameStatus.WIN;
             return true;
         }
         return false;
@@ -145,27 +160,30 @@ public class Board {
     public int getRows() {
         return rows;
     }
-    
+
     public int getCols() {
         return cols;
     }
-    
+
     public boolean isMine(int row, int col) {
         return mines[row][col];
     }
-    
+
     public boolean isRevealed(int row, int col) {
         return revealed[row][col];
     }
-    
+
     public boolean isFlagged(int row, int col) {
         return flagged[row][col];
     }
-    
+
     public int getSurroundingMinesCount(int row, int col) {
         return surroundingMines[row][col];
     }
-    
+
+    public GameStatus getStatus() {
+        return status;
+    }
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         Board b = new Board(8, 8);

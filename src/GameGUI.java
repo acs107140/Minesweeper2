@@ -23,6 +23,7 @@ public class GameGUI extends JPanel {
     private boolean replayFinished;
     private int replaySpeed = 1000; // 初始重播速度為1秒
     private Timer replayTimer;
+    private JButton speedButton;
 
     private static class GameSnapshot {
         private Board board;
@@ -111,16 +112,17 @@ public class GameGUI extends JPanel {
             e.printStackTrace();
         }
         this.add(timerLabel, gbc);
-        JButton speedButton = new JButton("Speed: 1x");
+        speedButton = new JButton("Speed: 1x");
+        speedButton.setVisible(false);
         speedButton.addActionListener(e -> {
             if (replaySpeed == 1000) {
-                replaySpeed = 500; // 設置為0.5秒
+                replaySpeed = 750;
+                speedButton.setText("Speed: 1.5x");
+            } else if (replaySpeed == 750) {
+                replaySpeed = 500;
                 speedButton.setText("Speed: 2x");
-            } else if (replaySpeed == 500) {
-                replaySpeed = 250; // 設置為0.25秒
-                speedButton.setText("Speed: 4x");
             } else {
-                replaySpeed = 1000; // 設置為1秒
+                replaySpeed = 1000;
                 speedButton.setText("Speed: 1x");
             }
             if (replayTimer != null && replayTimer.isRunning()) {
@@ -407,22 +409,33 @@ public class GameGUI extends JPanel {
         }
 
         resetGame();
+        gameTimer.stop();
         currentSnapshotIndex = 0;
-        Timer replayTimer = new Timer(1000, new ActionListener() {
+        speedButton.setVisible(true);
+        timerLabel.setVisible(false);
+
+        Timer replayTimer = new Timer(250, new ActionListener() {
+            int t = 0;
+
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (currentSnapshotIndex < gameSnapshots.size()) {
-                    GameSnapshot snapshot = gameSnapshots.get(currentSnapshotIndex);
-                    board = snapshot.getBoard().clone(); // 使用克隆的Board對象
-                    secondsPassed = snapshot.getSecondsPassed();
-                    updateButtons();
-                    updateTimerLabel(String.format("%03d", secondsPassed));
-                    currentSnapshotIndex++;
-                } else {
-                    gameSnapshots.clear();
-                    replayFinished = true;
-                    gameTimer.stop();
-                    ((Timer) e.getSource()).stop();
+                t += 250;
+
+                if (t % replaySpeed == 0) {
+                    if (currentSnapshotIndex < gameSnapshots.size()) {
+                        GameSnapshot snapshot = gameSnapshots.get(currentSnapshotIndex);
+                        board = snapshot.getBoard().clone(); // 使用克隆的Board對象
+                        secondsPassed = snapshot.getSecondsPassed();
+                        updateButtons();
+                        currentSnapshotIndex++;
+                    } else {
+                        gameSnapshots.clear();
+                        replayFinished = true;
+                        gameTimer.stop();
+                        ((Timer) e.getSource()).stop();
+                        speedButton.setVisible(false);
+                        timerLabel.setVisible(true);
+                    }
                 }
             }
         });

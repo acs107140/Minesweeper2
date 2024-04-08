@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.net.*;
 
 public class GameGUI extends JPanel {
     private Controller controller;
@@ -281,9 +282,19 @@ public class GameGUI extends JPanel {
         }
     }
 
-    // TODO: 上傳
     private void uploadScore(String name, int score) {
+        try {
+            String urlStr = String.format("http://localhost:3000/api/records/%s/%d", name, score);
+            URL url = new URL(urlStr);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
 
+            int resCode = connection.getResponseCode();
+            System.out.println("[Info] Upload score (" + resCode + ")");
+            connection.disconnect();
+        } catch (Exception e) {
+            System.err.println("[Error] Cannot upload score\n" + e);
+        }
     }
 
     private void showReplayDialog(String gameResult) {

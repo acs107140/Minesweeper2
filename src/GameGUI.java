@@ -186,7 +186,6 @@ public class GameGUI extends JPanel {
             }
         });
         backButton.addActionListener(e -> {
-            resetGame();
             controller.switchPanel("MAIN");
         });
         gbc.gridy = 3;
@@ -194,12 +193,10 @@ public class GameGUI extends JPanel {
         this.add(backButton, gbc);
     }
 
-    public void resetGame() {
+    public void resetGame(boolean clear) {
         // 停止計時器並重置秒數
         gameTimer.stop();
-        secondsPassed = 0;
-        updateTimerLabel("000");
-        startTimer();
+        
 
         // 重置按鈕狀態和圖標
         for (int i = 0; i < board.getRows(); i++) {
@@ -210,7 +207,15 @@ public class GameGUI extends JPanel {
                 button.setEnabled(true);
             }
         }
-
+        timerLabel.setVisible(true);
+        speedButton.setVisible(false);
+        if(clear){
+            gameSnapshots.clear();
+            replayFinished = false; 
+        }
+        secondsPassed = 0;
+        updateTimerLabel("000");
+        startTimer();
         // 重置棋盤狀態
         board.initBoard();
     }
@@ -301,7 +306,7 @@ public class GameGUI extends JPanel {
 
     private void showReplayDialog(String gameResult) {
         int choice = JOptionPane.showOptionDialog(
-                null,
+                this,
                 gameResult + " Do you want to replay?",
                 "Game Over",
                 JOptionPane.YES_NO_OPTION,
@@ -312,6 +317,8 @@ public class GameGUI extends JPanel {
 
         if (choice == JOptionPane.YES_OPTION) {
             replayGame();
+        }else{
+            replayFinished = true;
         }
     }
 
@@ -344,7 +351,6 @@ public class GameGUI extends JPanel {
                     // 停止postReplayTimer
                     ((Timer) e.getSource()).stop();
                     showNameInputDialog(); // 彈出對話框讓玩家輸入名稱
-                    resetGame();
                     controller.switchPanel("MAIN");
                 }
             }
@@ -408,11 +414,11 @@ public class GameGUI extends JPanel {
             return;
         }
 
-        resetGame();
+        resetGame(false);
         gameTimer.stop();
         currentSnapshotIndex = 0;
-        speedButton.setVisible(true);
         timerLabel.setVisible(false);
+        speedButton.setVisible(true);
 
         Timer replayTimer = new Timer(250, new ActionListener() {
             int t = 0;
@@ -429,12 +435,9 @@ public class GameGUI extends JPanel {
                         updateButtons();
                         currentSnapshotIndex++;
                     } else {
-                        gameSnapshots.clear();
                         replayFinished = true;
                         gameTimer.stop();
                         ((Timer) e.getSource()).stop();
-                        speedButton.setVisible(false);
-                        timerLabel.setVisible(true);
                     }
                 }
             }

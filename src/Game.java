@@ -16,6 +16,8 @@ public class Game implements Controller{
     public void switchPanel(String panelName){
         CardLayout cardLayout = (CardLayout) displayPanel.getLayout();
         cardLayout.show(displayPanel, panelName);
+        if(panelName.equals("GAME"))
+            gameGUI.resetGame(true);
     }
 
     private void initialize(){

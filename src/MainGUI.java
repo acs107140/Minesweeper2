@@ -105,7 +105,10 @@ public class MainGUI extends JPanel {
         JOptionPane.showMessageDialog(this, "排行榜尚未實現，敬請期待！", "排行榜", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    //編輯地圖開頭
     private void editMap() {
-        JOptionPane.showMessageDialog(this, "編輯地圖尚未實現，敬請期待！", "排行榜", JOptionPane.INFORMATION_MESSAGE);
+        MineEditorDialog mineEditorDialog = new MineEditorDialog(controller);
+        mineEditorDialog.setVisible(true);
     }
+    //編輯地圖結尾
 }

@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Scanner;
+import java.util.StringTokenizer;
 
 public class Board {
     private int rows;
@@ -13,6 +14,7 @@ public class Board {
     private boolean[][] flagged;
     private int[][] surroundingMines;
     private GameStatus status;
+
     public enum GameStatus {
         PLAYING,
         WIN,
@@ -25,7 +27,7 @@ public class Board {
         initBoard();
         this.status = GameStatus.PLAYING;
     }
-    
+
     public void initBoard() {
         this.numMines = 0;
         cellsRemain = rows * cols;
@@ -45,16 +47,14 @@ public class Board {
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(f));
-            while (true) {
-                String line = reader.readLine();
-                if (line == null)
-                    break;
-                Scanner sc = new Scanner(line);
-                int x = sc.nextInt() - 1;
-                int y = sc.nextLine().strip().charAt(0) - 'A';
+            String line = reader.readLine();
+            StringTokenizer st = new StringTokenizer(line, ",");
+            while (st.hasMoreTokens()) {
+                String pair = st.nextToken().strip();
+                String[] pos = pair.split(" ");
+                int x = Integer.parseInt(pos[0]) - 1;
+                int y = pos[1].charAt(0) - 'A';
                 this.placeMine(x, y);
-                sc.close();
-                numMines++;
             }
 
             reader.close();
@@ -66,9 +66,9 @@ public class Board {
     public void placeMine(int row, int col) {
         if (row >= 0 && row < rows && col >= 0 && col < cols) {
             mines[row][col] = true;
-
-            updateSurroundingMines();
+            numMines++;
         }
+        updateSurroundingMines();
     }
 
     private void updateSurroundingMines() {
@@ -187,7 +187,7 @@ public class Board {
 
     public Board clone() {
         Board clonedBoard = new Board(this.rows, this.cols);
-        
+
         // Clone mines, revealed, flagged, and surroundingMines arrays
         for (int i = 0; i < this.rows; i++) {
             System.arraycopy(this.mines[i], 0, clonedBoard.mines[i], 0, this.cols);
@@ -195,14 +195,15 @@ public class Board {
             System.arraycopy(this.flagged[i], 0, clonedBoard.flagged[i], 0, this.cols);
             System.arraycopy(this.surroundingMines[i], 0, clonedBoard.surroundingMines[i], 0, this.cols);
         }
-        
+
         // Clone other attributes
         clonedBoard.numMines = this.numMines;
         clonedBoard.cellsRemain = this.cellsRemain;
         clonedBoard.status = this.status;
-        
+
         return clonedBoard;
     }
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         Board b = new Board(8, 8);

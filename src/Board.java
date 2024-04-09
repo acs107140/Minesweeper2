@@ -45,18 +45,17 @@ public class Board {
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(f));
-            while (true) {
-                String line = reader.readLine();
-                if (line == null)
-                    break;
-                Scanner sc = new Scanner(line);
-                int x = sc.nextInt() - 1;
-                int y = sc.nextLine().strip().charAt(0) - 'A';
-                this.placeMine(x, y);
-                sc.close();
-                numMines++;
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                for (String part : parts) {
+                    String[] coordinates = part.trim().split(" ");
+                    int x = Integer.parseInt(coordinates[0]) - 1;
+                    int y = coordinates[1].charAt(0) - 'A';
+                    this.placeMine(x, y);
+                    numMines++;
+                }
             }
-
             reader.close();
         } catch (Exception e) {
             e.printStackTrace();

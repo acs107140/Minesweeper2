@@ -4,6 +4,7 @@ const httpError = require("http-errors");
 
 const logger = require("morgan");
 const cookieParser = require("cookie-parser");
+const staticFiles = express.static(path.join(__dirname, "../public"));
 
 // create instances of routers
 const apiRouter = require("./routes/api");
@@ -19,6 +20,8 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.use("/public", staticFiles);
 
 // bind routers
 app.use("/api", apiRouter);

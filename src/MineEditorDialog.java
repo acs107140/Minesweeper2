@@ -80,11 +80,19 @@ public class MineEditorDialog extends JDialog {
     private void toggleMine(JButton button, int row, int col) {
         if (button.getText().equals("M")) {
             button.setText("");
+            button.setIcon(null); // 清除圖標
             remainingMines++;
         } else {
             if (remainingMines > 0) { // 檢查是否還有剩餘地雷可放置
                 button.setText("M");
                 remainingMines--;
+                // 設置炸彈圖標，並縮放為 40x40 大小，並且保持比例
+                ImageIcon bombIcon = new ImageIcon(getClass().getResource("/img/bomb.png"));
+                Image img = bombIcon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+                button.setIcon(new ImageIcon(img));
+                // 將圖片向右移動 10 個像素
+                button.setMargin(new Insets(0, 12, 0, 0));
+                
             } else {
                 JOptionPane.showMessageDialog(this, "已達到最大地雷數量限制", "提示", JOptionPane.WARNING_MESSAGE);
             }
